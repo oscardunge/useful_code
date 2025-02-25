@@ -18,7 +18,7 @@ def json_records_to_dataframe(json_records):
     except Exception as e:
         raise e
 
-def read_json_file_and_transpose(file_path):
+def read_json_file_with_json_func(file_path):
     with open(file_path, 'r') as f:  
         json_data = json.load(f)  
     if isinstance(json_data, dict) and "value" in json_data: 
@@ -36,7 +36,7 @@ def read_json_file_and_transpose(file_path):
 
 
 def pandas_dataframe_to_sql(table_name, conn, cursor):
-    df_from_file = read_json_file_and_transpose(f"{table_name}.json")
+    df_from_file = read_json_file_with_json_func(f"{table_name}.json")
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
@@ -53,10 +53,10 @@ def pandas_dataframe_to_sql(table_name, conn, cursor):
 
 
 def get_column_names(table_name, conn, cursor):
-    # cursor = conn.cursor()
+    
     cursor.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table_name}'")
     columns = [f'"{row[0]}"' for row in cursor.fetchall()]
-    # cursor.close()
+    
     return columns
 
 
@@ -76,7 +76,7 @@ def main(table_name, id):
     
     cursor = conn.cursor()
     try:
-        table_name_with_timestamp = pandas_dataframe_to_sql(table_name,conn, cursor)  # Replace with your actual table name
+        table_name_with_timestamp = pandas_dataframe_to_sql(table_name,conn, cursor)  
         
         print(table_name_with_timestamp)
         columns = get_column_names(table_name, conn, cursor)
@@ -103,7 +103,7 @@ def main(table_name, id):
             
             cursor.execute(constraint_statement)
             cursor.execute(insert_statement)
-        # cursor.execute(f"select * from {table_name_with_timestamp}")
+        
         finally:
             conn.commit()
             error_occurred = False
@@ -122,6 +122,5 @@ def main(table_name, id):
 
 
 if __name__ == "__main__":
-    # main("fff")
-    main("bronze_xxxxx_all", "xxxxxxxyid")
+    main("bronze_xxxxxies_all", "xxxxxyid")
 
