@@ -35,6 +35,7 @@ def read_json_file_with_json_func(file_path):
 
 
 
+
 def pandas_dataframe_to_sql(table_name, conn, cursor):
     df_from_file = read_json_file_with_json_func(f"{table_name}.json")
     
@@ -45,11 +46,11 @@ def pandas_dataframe_to_sql(table_name, conn, cursor):
     engine = create_engine('postgresql+psycopg2://oscar:@localhost:5432/postgres')
     
     df_from_file.T.to_sql(table_name_with_timestamp, engine, if_exists='replace', index=False, method='multi', schema='avega_dwh')
-    # conn.close()
+    # df_from_file.T.to_sql(table_name, engine, if_exists='replace', index=False, method='multi', schema='avega_dwh')
     
     return table_name_with_timestamp
 
-# pandas_dataframe_to_sql('bronze_opportunities_all')
+# pandas_dataframe_to_sql('xxxxies_2025')
 
 
 def get_column_names(table_name, conn, cursor):
@@ -79,6 +80,32 @@ def main(table_name, id):
         table_name_with_timestamp = pandas_dataframe_to_sql(table_name,conn, cursor)  
         
         print(table_name_with_timestamp)
+        conn.commit()
+        
+        
+        create_statement = f"""
+        
+            create table if not exists {table_name} as
+            select * 
+            from {table_name_with_timestamp} 
+            limit 0;
+            """
+        print(create_statement)
+            
+        cursor.execute(create_statement)
+        conn.commit()
+        
+        constraint_statement = f"""         
+            alter table {table_name}
+            add constraint {id}_{table_name} unique ({id});"""
+            
+        print(constraint_statement)
+        try:
+            cursor.execute(constraint_statement)
+            conn.commit()
+        except:
+            pass
+        
         columns = get_column_names(table_name, conn, cursor)
         columns_str = ', '.join(columns)
         
@@ -96,24 +123,21 @@ def main(table_name, id):
             cursor.execute(insert_statement)
         
         except Exception as e:
-            print(f"Error: {e}")
-            constraint_statement = f"""
-            alter table {table_name}
-            add constraint {id} unique ({id});"""
+            print(f"Error_: {e}")
             
-            cursor.execute(constraint_statement)
-            cursor.execute(insert_statement)
         
+            
         finally:
             conn.commit()
             error_occurred = False
             
     except psycopg2.Error as e:
-        print(f"Error: {e}")
+        print(f"Error__: {e} , will not drop {table_name_with_timestamp} or commit")
         error_occurred = True
     finally:
         if not error_occurred:
             cursor.execute(f"DROP TABLE {table_name_with_timestamp}")
+            print(f"ATEMT: DROP TABLE {table_name_with_timestamp}")
             conn.commit()
         if cursor:
             cursor.close()
@@ -121,6 +145,13 @@ def main(table_name, id):
             conn.close()
 
 
+
 if __name__ == "__main__":
-    main("bronze_xxxxxies_all", "xxxxxyid")
+    main("bronze_xxxxies_2025", "xxxxyid")
+
+
+
+
+
+
 
