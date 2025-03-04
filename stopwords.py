@@ -29,4 +29,4 @@ df['description_filtered'] = df['description'].apply(remove_stop_words)
 # print(df)
 print(df["description_filtered"])
 
-
+df.to_json('data.json', orient='records', indent=4)
